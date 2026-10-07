@@ -1,791 +1,606 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MeuCardápio · Cardápio Digital</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    body {
-      background-color: #f3f4f6;
-      color: #1f2937;
-    }
-
-    :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --secondary: #f97316;
-      --gray-bg: #f9fafb;
-      --card-white: #ffffff;
-      --text-dark: #111827;
-      --text-muted: #6b7280;
-      --border-light: #e5e7eb;
-    }
-
-    header {
-      background: var(--card-white);
-      border-bottom: 1px solid var(--border-light);
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-    }
-
-    .header-container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0.75rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 700;
-      font-size: 1.5rem;
-      letter-spacing: -0.02em;
-    }
-    .logo span {
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .admin-login-btn {
-      background: transparent;
-      border: 1px solid var(--border-light);
-      padding: 0.4rem 1rem;
-      border-radius: 40px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      color: var(--text-muted);
-    }
-    .admin-login-btn:hover {
-      background: var(--gray-bg);
-    }
-
-    .main-container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 7rem; /* Aumentado para dar espaço à barra fixa */
-    }
-
-    section {
-      display: none;
-    }
-    section.active-section {
-      display: block;
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-    .modal {
-      background: white;
-      padding: 2rem;
-      border-radius: 2rem;
-      width: 90%;
-      max-width: 380px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    }
-    .modal h3 {
-      margin-bottom: 1rem;
-    }
-    .modal input, .modal select, .modal textarea {
-      width: 100%;
-      padding: 1rem;
-      border: 1px solid var(--border-light);
-      border-radius: 40px;
-      margin: 0.5rem 0;
-      background: white;
-    }
-    .modal-actions {
-      display: flex;
-      gap: 0.8rem;
-      justify-content: flex-end;
-      margin-top: 1rem;
-    }
-
-    .admin-tabs {
-      display: flex;
-      gap: 0.5rem;
-      border-bottom: 2px solid var(--border-light);
-      padding-bottom: 0.2rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-    }
-    .tab-btn {
-      background: transparent;
-      border: none;
-      padding: 0.7rem 1.5rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      border-radius: 30px 30px 0 0;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
-    .tab-btn.active {
-      color: var(--primary);
-      border-bottom: 3px solid var(--primary);
-      background: rgba(37,99,235,0.05);
-    }
-
-    .admin-card {
-      background: var(--card-white);
-      border-radius: 1.2rem;
-      padding: 1.5rem;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.02);
-      border: 1px solid var(--border-light);
-      margin-bottom: 1.5rem;
-    }
-    .input-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      margin: 1rem 0;
-    }
-    .input-group input, .input-group select, .input-group textarea {
-      padding: 0.8rem 1rem;
-      border: 1px solid var(--border-light);
-      border-radius: 1.5rem;
-      font-size: 0.95rem;
-      flex: 1 1 200px;
-      background: var(--gray-bg);
-    }
-
-    .category-title {
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin: 2rem 0 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .category-title::before {
-      content: '•';
-      color: var(--secondary);
-      font-size: 2.5rem;
-    }
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.2rem;
-      margin-bottom: 2rem;
-    }
-    .product-card {
-      background: var(--card-white);
-      border: 1px solid var(--border-light);
-      border-radius: 1.5rem;
-      padding: 1.2rem;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-    }
-    .product-card strong {
-      font-size: 1.2rem;
-    }
-    .product-desc {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      margin: 0.3rem 0 0.8rem;
-      flex: 1;
-    }
-    .product-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 0.8rem;
-    }
-    .product-price {
-      font-weight: 700;
-      color: var(--primary);
-      font-size: 1.25rem;
-    }
-    .qty-control {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: #f3f4f6;
-      padding: 0.2rem 0.2rem 0.2rem 0.8rem;
-      border-radius: 2rem;
-    }
-    .qty-control button {
-      background: white;
-      border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      font-weight: 700;
-      font-size: 1.2rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      cursor: pointer;
-      color: var(--primary);
-    }
-    .qty-control button:hover {
-      background: var(--primary);
-      color: white;
-    }
-
-    /* BARRA DO CARRINHO - CORRIGIDA */
-    .cart-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid var(--border-light);
-      padding: 0.8rem 1.5rem;
-      z-index: 50;
-      pointer-events: none; /* Permite clicar "através" da barra */
-    }
-    .cart-container {
-      max-width: 1280px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 1rem;
-      pointer-events: auto; /* Mantém os elementos internos clicáveis */
-    }
-    .cart-info {
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-      flex-wrap: wrap;
-    }
-    .cart-info textarea {
-      width: 260px;
-      height: 2.8rem;
-      padding: 0.5rem 1rem;
-      border-radius: 40px;
-      border: 1px solid var(--border-light);
-      resize: none;
-      background: white;
-    }
-    .total-price {
-      font-weight: 700;
-      font-size: 1.3rem;
-      color: var(--primary-dark);
-    }
-
-    @media print {
-      body * { visibility: hidden; }
-      #printArea, #printArea * { visibility: visible; }
-      #printArea {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 80mm;
-        padding: 4mm;
-        font-family: 'Courier New', monospace;
-      }
-    }
-
-    @media (max-width: 780px) {
-      .cart-container { 
-        flex-direction: column; 
-        align-items: flex-start; 
-      }
-      .main-container {
-        padding-bottom: 8rem; /* Mais espaço em mobile */
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comanda Fácil</title>
+<style>
+:root{
+  --bg:#f3f6fa;--card:#fff;--primary:#1769e0;--primary2:#0d4fae;
+  --text:#17202a;--muted:#6b7785;--border:#dce3eb;--danger:#d9363e;
+  --success:#16834b;--shadow:0 8px 25px rgba(20,45,80,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+header{background:linear-gradient(135deg,#0d4fae,#1769e0);color:#fff;padding:20px}
+.header-inner{max-width:1200px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+header h1{margin:0;font-size:24px}
+header p{margin:5px 0 0;opacity:.85}
+#clock{font-size:13px;opacity:.9;text-align:right}
+.container{max-width:1200px;margin:25px auto;padding:0 15px}
+.grid{display:grid;grid-template-columns:1.5fr .8fr;gap:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+h2{font-size:18px;margin:0 0 18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{font-size:13px;font-weight:bold;color:#475465;display:block;margin-bottom:6px}
+input,textarea,select{width:100%;border:1px solid var(--border);border-radius:9px;padding:11px;font-size:15px;outline:none;background:#fff;font-family:inherit}
+input:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(23,105,224,.1)}
+textarea{resize:vertical;min-height:70px}
+.full{grid-column:1/-1}
+.add-row{display:grid;grid-template-columns:1fr 90px 130px auto;gap:10px;align-items:end;margin-top:15px}
+button{border:0;border-radius:9px;padding:11px 15px;font-size:14px;font-weight:bold;cursor:pointer;transition:.15s;font-family:inherit}
+button:hover{transform:translateY(-1px)}
+button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary2)}
+.btn-secondary{background:#eaf1fb;color:#1454a0}
+.btn-danger{background:#fee8e8;color:var(--danger);padding:6px 10px}
+.btn-success{background:var(--success);color:#fff}
+.btn-dark{background:#202b36;color:#fff}
+.btn-wpp{background:#25d366;color:#fff}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{padding:11px 8px;border-bottom:1px solid var(--border);text-align:left;font-size:14px}
+th{color:var(--muted);font-size:12px;text-transform:uppercase}
+tbody tr:hover{background:#f8fbff;cursor:pointer}
+.right{text-align:right}.empty{text-align:center;color:var(--muted);padding:25px}
+.total{display:flex;justify-content:space-between;align-items:center;font-size:20px;font-weight:bold;padding-top:18px}
+.total strong{color:var(--primary)}
+.actions{display:grid;gap:10px;margin-top:20px}
+.actions .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.status{margin-top:12px;padding:10px;border-radius:8px;font-size:13px;display:none}
+.status.show{display:block}.status.ok{background:#e7f7ef;color:#11663c}.status.error{background:#fee8e8;color:#a51d25}
+.history{margin-top:20px}
+.history-item{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:9px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.history-item small{color:var(--muted)}
+.badge{background:#eaf1fb;color:#1454a0;padding:4px 8px;border-radius:20px;font-size:12px;font-weight:bold}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+@media(max-width:800px){
+  .grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .full{grid-column:auto}
+  .add-row{grid-template-columns:1fr 80px 110px}
+  .add-row button{grid-column:1/-1}
+}
+@media(max-width:520px){
+  .add-row{grid-template-columns:1fr 1fr}
+  .add-row input:first-child{grid-column:1/-1}
+  table{font-size:12px}
+  th,td{padding:8px 4px}
+  .actions .row{grid-template-columns:1fr}
+}
+@media print{
+  body{background:#fff}
+  .no-print,header,.history{display:none!important}
+  .container{margin:0;padding:0}
+  .grid{display:block}
+  .card{box-shadow:none;border:0;padding:0}
+  .print-area{display:block!important}
+  .print-area h1{font-size:18px;text-align:center}
+  .print-area p{margin:4px 0}
+}
+</style>
 </head>
 <body>
 
-<header>
-  <div class="header-container">
-    <div class="logo">
-      <span>MeuCardápio</span>
+<header class="no-print">
+  <div class="header-inner">
+    <div>
+      <h1>🍽️ Comanda Fácil</h1>
+      <p>Sistema simples de pedidos para mesas e comandas</p>
     </div>
-    <div class="admin-login-btn" onclick="abrirModalAdmin()">
-      🔐 Área do dono
-    </div>
+    <span id="clock"></span>
   </div>
 </header>
 
-<!-- MODAL DE LOGIN REAL -->
-<div id="modalAdmin" class="modal-overlay">
-  <div class="modal">
-    <h3>Acesso restrito</h3>
-    <p>Digite a senha para gerenciar o cardápio:</p>
-    <input type="password" id="senhaInput" placeholder="senha">
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="verificarSenha()">Entrar</button>
-    </div>
+<div class="container">
+  <div class="grid">
+
+    <section class="card">
+      <h2>📋 Novo pedido</h2>
+
+      <div class="form-grid">
+        <div>
+          <label for="mesa">Mesa / Comanda *</label>
+          <input id="mesa" placeholder="Ex.: Mesa 12" autocomplete="off">
+        </div>
+        <div>
+          <label for="cliente">Cliente</label>
+          <input id="cliente" placeholder="Nome do cliente (opcional)" autocomplete="off">
+        </div>
+        <div class="full">
+          <label for="observacao">Observação geral</label>
+          <textarea id="observacao" placeholder="Ex.: sem cebola, pouco gelo, entregar na mesa..."></textarea>
+        </div>
+      </div>
+
+      <h2 style="margin-top:25px">➕ Adicionar item</h2>
+
+      <div class="add-row">
+        <div>
+          <label for="item">Produto / Descrição</label>
+          <input id="item" placeholder="Ex.: X-Burger" autocomplete="off">
+        </div>
+        <div>
+          <label for="quantidade">Qtd.</label>
+          <input id="quantidade" type="number" min="1" step="1" value="1" inputmode="numeric">
+        </div>
+        <div>
+          <label for="preco">Preço unit.</label>
+          <input id="preco" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
+        </div>
+        <button class="btn-primary" onclick="adicionarItem()">Adicionar</button>
+      </div>
+      <p class="hint">💡 Dica: pressione <b>Enter</b> em qualquer campo para adicionar o item. Clique numa linha da tabela para <b>editar</b>.</p>
+
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Qtd.</th><th>Unit.</th><th class="right">Total</th><th></th></tr>
+        </thead>
+        <tbody id="listaItens">
+          <tr><td colspan="5" class="empty">Nenhum item adicionado.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="total">
+        <span>Total <small id="totalItens" style="font-weight:normal;color:var(--muted);font-size:13px"></small></span>
+        <strong id="total">R$ 0,00</strong>
+      </div>
+
+      <div class="actions no-print">
+        <button class="btn-success" onclick="concluirPedido()">✅ Concluir e gerar PDF</button>
+        <div class="row">
+          <button class="btn-wpp" onclick="enviarWhatsApp()">💬 WhatsApp</button>
+          <button class="btn-dark" onclick="imprimirPedido()">🖨️ Imprimir</button>
+        </div>
+        <button class="btn-secondary" onclick="novoPedido()">＋ Limpar / Novo pedido</button>
+      </div>
+
+      <div id="status" class="status"></div>
+    </section>
+
+    <aside class="card no-print">
+      <h2>🧾 Resumo</h2>
+      <p><b>Mesa:</b> <span id="resumoMesa">—</span></p>
+      <p><b>Cliente:</b> <span id="resumoCliente">—</span></p>
+      <p><b>Itens:</b> <span id="resumoItens">0</span></p>
+      <p><b>Total:</b> <strong id="resumoTotal">R$ 0,00</strong></p>
+
+      <div class="history">
+        <h2>🕘 Últimos pedidos</h2>
+        <div id="historico"><div class="empty">Nenhum pedido concluído.</div></div>
+      </div>
+    </aside>
+
+    <section class="card print-area" style="display:none">
+      <div id="comprovante"></div>
+    </section>
+
   </div>
 </div>
 
-<!-- MODAL DE EDIÇÃO DE PRODUTO -->
-<div id="modalEditarProduto" class="modal-overlay">
-  <div class="modal">
-    <h3>✏️ Editar produto</h3>
-    <input type="text" id="editNome" placeholder="Nome">
-    <input type="number" id="editPreco" placeholder="Preço R$" step="0.01">
-    <select id="editCategoria"></select>
-    <textarea id="editDesc" placeholder="Descrição curta" rows="2"></textarea>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="fecharModalEditar()">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarEdicaoProduto()">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<main class="main-container">
-  <section id="menu" class="active-section">
-    <h2 style="font-size:2rem; margin-bottom:1rem;">🍽️ Nosso Cardápio</h2>
-    <div id="menuList" class="product-grid"></div>
-  </section>
-
-  <section id="admin">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <h2>⚙️ Gerenciar cardápio</h2>
-      <button class="btn btn-outline" onclick="sairAdmin()">Sair do painel</button>
-    </div>
-    <div class="admin-tabs">
-      <button class="tab-btn active" onclick="switchTab('geral', this)">Geral</button>
-      <button class="tab-btn" onclick="switchTab('categorias', this)">Categorias</button>
-      <button class="tab-btn" onclick="switchTab('produtos', this)">Produtos</button>
-      <button class="tab-btn" onclick="switchTab('qrcode', this)">QR Code</button>
-    </div>
-
-    <div id="geral" class="admin-card">
-      <h3>📋 Visão geral</h3>
-      <p>Gerencie categorias e produtos. As alterações aparecem automaticamente no cardápio.</p>
-      <p><strong>Número da loja (WhatsApp):</strong> <input type="text" id="whatsappLoja" placeholder="5511999999999" style="padding:0.5rem;border-radius:40px;border:1px solid #ccc;width:200px;"></p>
-    </div>
-
-    <div id="categorias" style="display:none;" class="admin-card">
-      <h3>➕ Categorias</h3>
-      <div class="input-group">
-        <input type="text" id="catNome" placeholder="Ex: Pizzas, Bebidas...">
-        <button class="btn btn-primary" onclick="addCategoria()">Adicionar</button>
-      </div>
-      <div id="catList"></div>
-    </div>
-
-    <div id="produtos" style="display:none;" class="admin-card">
-      <h3>🍔 Adicionar produto</h3>
-      <div class="input-group">
-        <input type="text" id="pNome" placeholder="Nome">
-        <input type="number" id="pPreco" placeholder="Preço R$" step="0.01">
-        <select id="pCategoria"></select>
-        <textarea id="pDesc" placeholder="Descrição curta" rows="2"></textarea>
-        <button class="btn btn-primary" onclick="addProduto()">Salvar produto</button>
-      </div>
-      <hr style="margin:1.5rem 0;">
-      <h4>Produtos existentes</h4>
-      <div id="prodList" style="margin-top:1rem;"></div>
-    </div>
-
-    <div id="qrcode" style="display:none;" class="admin-card">
-      <h3>📲 QR Code do cardápio</h3>
-      <div style="background: white; padding:2rem; border-radius:2rem; display:inline-block;">
-        <img id="qr" width="220" src="" alt="QR code">
-      </div>
-    </div>
-  </section>
-</main>
-
-<div class="cart-bar">
-  <div class="cart-container">
-    <div class="cart-info">
-      <textarea id="obs" placeholder="Observações (ex: tirar cebola)"></textarea>
-      <span class="total-price" id="total">R$ 0,00</span>
-    </div>
-    <button class="btn btn-primary" onclick="finalizar()" style="padding:0.8rem 2rem;">📲 Pedir via WhatsApp</button>
-  </div>
-</div>
-
-<div id="printArea" style="display:none"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 
 <script>
-  // ===== PROTEÇÃO REAL =====
-  const SENHA_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // hash de "admin"
-  
-  let adminLogado = false;
-  let produtoEditandoIndex = null;
+/* ========== Estado ========== */
+let itens = [];
+let pedidos = lerJSON("comanda_pedidos", []);
+let editandoIdx = -1;
 
-  async function verificarSenha() {
-    const senhaDigitada = document.getElementById('senhaInput').value;
-    const hashDigitado = await sha256(senhaDigitada);
-    
-    if (hashDigitado === SENHA_HASH) {
-      adminLogado = true;
-      sessionStorage.setItem('adminAuth', 'true');
-      fecharModal();
-      document.querySelectorAll('section').forEach(s => s.classList.remove('active-section'));
-      document.getElementById('admin').classList.add('active-section');
-      render();
-    } else {
-      alert('Senha incorreta!');
-    }
+const STORAGE_PEDIDOS = "comanda_pedidos";
+const STORAGE_RASCUNHO = "comanda_rascunho";
+
+/* ========== Utilidades ========== */
+const fmtBRL = v => new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(v || 0);
+
+// Para o PDF: substitui o espaço não-quebrável que o Intl insere
+const moneyPDF = v => fmtBRL(v).replace(/\u00A0/g, " ");
+
+// Converte "10,50" ou "10.50" em 10.5
+function parseNumero(str){
+  if (typeof str === "number") return str;
+  if (!str) return NaN;
+  const limpo = String(str).trim().replace(/\s/g, "").replace(",", ".");
+  return parseFloat(limpo);
+}
+
+function lerJSON(chave, fallback){
+  try { return JSON.parse(localStorage.getItem(chave)) ?? fallback; }
+  catch { return fallback; }
+}
+
+function salvarJSON(chave, valor){
+  try { localStorage.setItem(chave, JSON.stringify(valor)); }
+  catch(e){ console.warn("Falha ao salvar em localStorage:", e); }
+}
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+
+function aviso(msg, tipo){
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.className = "status show " + tipo;
+  clearTimeout(aviso._t);
+  aviso._t = setTimeout(()=>el.className = "status", 3800);
+}
+
+/* ========== Rascunho (não perder dados no F5) ========== */
+function salvarRascunho(){
+  salvarJSON(STORAGE_RASCUNHO, {
+    mesa: document.getElementById("mesa").value,
+    cliente: document.getElementById("cliente").value,
+    observacao: document.getElementById("observacao").value,
+    itens
+  });
+}
+function restaurarRascunho(){
+  const r = lerJSON(STORAGE_RASCUNHO, null);
+  if (!r) return;
+  document.getElementById("mesa").value = r.mesa || "";
+  document.getElementById("cliente").value = r.cliente || "";
+  document.getElementById("observacao").value = r.observacao || "";
+  itens = Array.isArray(r.itens) ? r.itens : [];
+}
+function limparRascunho(){
+  try { localStorage.removeItem(STORAGE_RASCUNHO); } catch {}
+}
+
+/* ========== Render ========== */
+function atualizar(){
+  const tbody = document.getElementById("listaItens");
+  if (!itens.length){
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Nenhum item adicionado.</td></tr>';
+  } else {
+    tbody.innerHTML = itens.map((x,i)=>`
+      <tr onclick="editarItem(${i})" title="Clique para editar">
+        <td>${esc(x.nome)}</td>
+        <td>${x.qtd}</td>
+        <td>${fmtBRL(x.preco)}</td>
+        <td class="right">${fmtBRL(x.qtd*x.preco)}</td>
+        <td onclick="event.stopPropagation()">
+          <button class="btn-danger" onclick="removerItem(${i})" title="Remover">✕</button>
+        </td>
+      </tr>`).join("");
   }
 
-  async function sha256(texto) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(texto);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  const total = itens.reduce((s,x)=>s + x.qtd*x.preco, 0);
+  const totalQtd = itens.reduce((s,x)=>s + x.qtd, 0);
+
+  document.getElementById("total").textContent = fmtBRL(total);
+  document.getElementById("totalItens").textContent = totalQtd ? `(${totalQtd} ${totalQtd===1?"item":"itens"})` : "";
+  document.getElementById("resumoTotal").textContent = fmtBRL(total);
+  document.getElementById("resumoMesa").textContent = document.getElementById("mesa").value || "—";
+  document.getElementById("resumoCliente").textContent = document.getElementById("cliente").value || "—";
+  document.getElementById("resumoItens").textContent = totalQtd;
+
+  renderHistorico();
+  salvarRascunho();
+}
+
+/* ========== Ações de item ========== */
+function adicionarItem(){
+  const nomeEl = document.getElementById("item");
+  const qtdEl  = document.getElementById("quantidade");
+  const precoEl = document.getElementById("preco");
+
+  const nome  = nomeEl.value.trim();
+  const qtd   = parseInt(qtdEl.value, 10);
+  const preco = parseNumero(precoEl.value);
+
+  if (!nome){
+    aviso("Informe o nome do produto.","error"); nomeEl.focus(); return;
+  }
+  if (!Number.isFinite(qtd) || qtd < 1){
+    aviso("Quantidade precisa ser um número inteiro maior que zero.","error"); qtdEl.focus(); return;
+  }
+  if (!Number.isFinite(preco) || preco < 0){
+    aviso("Preço inválido. Use, por exemplo, 10,50.","error"); precoEl.focus(); return;
   }
 
-  function verificarAcessoAdmin() {
-    const auth = sessionStorage.getItem('adminAuth');
-    if (auth !== 'true') {
-      adminLogado = false;
-      if (document.getElementById('admin').classList.contains('active-section')) {
-        document.getElementById('admin').classList.remove('active-section');
-        document.getElementById('menu').classList.add('active-section');
-      }
-      return false;
-    }
-    adminLogado = true;
-    return true;
+  if (editandoIdx >= 0){
+    itens[editandoIdx] = { nome, qtd, preco };
+    editandoIdx = -1;
+    aviso("Item atualizado.","ok");
+  } else {
+    itens.push({ nome, qtd, preco });
   }
 
-  const originalShowSection = window.showSection;
-  window.showSection = function(id) {
-    if (id === 'admin' && !verificarAcessoAdmin()) {
-      abrirModalAdmin();
-      return;
-    }
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active-section'));
-    document.getElementById(id).classList.add('active-section');
-  };
+  nomeEl.value = "";
+  qtdEl.value = 1;
+  precoEl.value = "";
+  nomeEl.focus();
+  atualizar();
+}
 
-  // ===== DADOS =====
-  let categorias = JSON.parse(localStorage.getItem('categorias')) || ['Pizzas', 'Bebidas'];
-  let produtos = JSON.parse(localStorage.getItem('produtos')) || [
-    { nome: 'Margherita', preco: 35.90, cat: 'Pizzas', desc: 'Molho, mussarela, manjericão' },
-    { nome: 'Calabresa', preco: 42.50, cat: 'Pizzas', desc: 'Calabresa, cebola, azeitona' },
-    { nome: 'Coca-cola 2L', preco: 12.00, cat: 'Bebidas', desc: 'Gelada' }
-  ];
-  let carrinho = {};
-  let pedido = Number(localStorage.getItem('pedido')) || 1;
-  let numeroLoja = localStorage.getItem('whatsappLoja') || '5511999999999';
+function removerItem(i){
+  itens.splice(i,1);
+  if (editandoIdx === i) editandoIdx = -1;
+  atualizar();
+}
 
-  // ===== FUNÇÕES =====
-  function abrirModalAdmin() {
-    document.getElementById('modalAdmin').style.display = 'flex';
-  }
-  
-  function fecharModal() {
-    document.getElementById('modalAdmin').style.display = 'none';
-  }
-  
-  function abrirModalEditar(index) {
-    produtoEditandoIndex = index;
-    const p = produtos[index];
-    document.getElementById('editNome').value = p.nome;
-    document.getElementById('editPreco').value = p.preco;
-    document.getElementById('editDesc').value = p.desc || '';
-    
-    const selectCat = document.getElementById('editCategoria');
-    selectCat.innerHTML = categorias.map(c => `<option ${c === p.cat ? 'selected' : ''}>${c}</option>`).join('');
-    
-    document.getElementById('modalEditarProduto').style.display = 'flex';
-  }
-  
-  function fecharModalEditar() {
-    document.getElementById('modalEditarProduto').style.display = 'none';
-    produtoEditandoIndex = null;
-  }
-  
-  function salvarEdicaoProduto() {
-    if (produtoEditandoIndex === null) return;
-    
-    produtos[produtoEditandoIndex] = {
-      nome: document.getElementById('editNome').value,
-      preco: parseFloat(document.getElementById('editPreco').value),
-      cat: document.getElementById('editCategoria').value,
-      desc: document.getElementById('editDesc').value
-    };
-    
-    fecharModalEditar();
-    salvar();
-  }
-  
-  function sairAdmin() {
-    adminLogado = false;
-    sessionStorage.removeItem('adminAuth');
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active-section'));
-    document.getElementById('menu').classList.add('active-section');
-  }
-
-  function render() {
-    if (document.getElementById('admin').classList.contains('active-section')) {
-      if (!verificarAcessoAdmin()) {
-        sairAdmin();
-        return;
-      }
-    }
-
-    const inputLoja = document.getElementById('whatsappLoja');
-    if (inputLoja) {
-      inputLoja.value = numeroLoja;
-      inputLoja.oninput = (e) => {
-        numeroLoja = e.target.value.replace(/\D/g, '');
-        localStorage.setItem('whatsappLoja', numeroLoja);
-      };
-    }
-
-    const selectCat = document.getElementById('pCategoria');
-    if (selectCat) selectCat.innerHTML = categorias.map(c => `<option>${c}</option>`).join('');
-
-    // Lista de categorias com botões de editar/excluir
-    const catDiv = document.getElementById('catList');
-    if (catDiv) {
-      catDiv.innerHTML = categorias.map((c, i) => `
-        <div style="display:flex;justify-content:space-between;align-items:center;background:#eef2f6;border-radius:30px;margin:0.3rem;padding:0.3rem 1rem;">
-          <span>${c}</span>
-          <div style="display:flex;gap:0.5rem;">
-            <button class="btn btn-outline" style="padding:0.2rem 0.8rem;" onclick="editarCategoria(${i})">✏️</button>
-            <button class="btn btn-outline" style="padding:0.2rem 0.8rem;" onclick="removerCategoria(${i})">🗑️</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Lista de produtos (admin) com botões de editar/excluir
-    const prodDiv = document.getElementById('prodList');
-    if (prodDiv) {
-      prodDiv.innerHTML = produtos.map((p,i) => 
-        `<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed #ccc;padding:8px 0">
-          <span>${p.nome} - R$ ${p.preco.toFixed(2)} (${p.cat})</span>
-          <div style="display:flex;gap:0.5rem;">
-            <button class="btn btn-outline" style="padding:0.2rem 0.8rem;" onclick="abrirModalEditar(${i})">✏️ editar</button>
-            <button class="btn btn-outline" style="padding:0.2rem 0.8rem;" onclick="removerProduto(${i})">🗑️ remover</button>
-          </div>
-        </div>`
-      ).join('');
-    }
-
-    // CARDÁPIO
-    const menuEl = document.getElementById('menuList');
-    if (menuEl) {
-      let html = '';
-      categorias.forEach(cat => {
-        const produtosCat = produtos.filter(p => p.cat === cat);
-        if (!produtosCat.length) return;
-        html += `<div class="category-title">${cat}</div>`;
-        produtosCat.forEach(p => {
-          const idx = produtos.findIndex(prod => prod.nome === p.nome && prod.cat === p.cat);
-          const q = carrinho[idx] || 0;
-          html += `
-            <div class="product-card">
-              <strong>${p.nome}</strong>
-              <div class="product-desc">${p.desc || ''}</div>
-              <div class="product-footer">
-                <span class="product-price">R$ ${p.preco.toFixed(2)}</span>
-                <div class="qty-control">
-                  <span>${q}</span>
-                  <button onclick="mudarQty(${idx}, -1)">−</button>
-                  <button onclick="mudarQty(${idx}, 1)">+</button>
-                </div>
-              </div>
-            </div>
-          `;
-        });
-      });
-      menuEl.innerHTML = html || '<p style="color:gray; text-align:center;">Nenhum produto cadastrado 😢</p>';
-    }
-
-    // Total carrinho
-    const total = Object.entries(carrinho).reduce((acc, [idx, qty]) => acc + (produtos[idx]?.preco || 0) * qty, 0);
-    document.getElementById('total').innerText = `R$ ${total.toFixed(2)}`;
-
-    // QR code
-    const qrImg = document.getElementById('qr');
-    if (qrImg) {
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(window.location.href)}`;
-    }
-  }
-
-  function mudarQty(index, delta) {
-    if (!produtos[index]) return;
-    const atual = carrinho[index] || 0;
-    const nova = atual + delta;
-    if (nova <= 0) delete carrinho[index];
-    else carrinho[index] = nova;
-    render();
-  }
-
-  function addCategoria() {
-    const inp = document.getElementById('catNome');
-    if (inp.value.trim()) {
-      categorias.push(inp.value.trim());
-      inp.value = '';
-      salvar();
-    }
-  }
-  
-  function editarCategoria(index) {
-    const novaCategoria = prompt('Editar categoria:', categorias[index]);
-    if (novaCategoria && novaCategoria.trim()) {
-      const antigoNome = categorias[index];
-      categorias[index] = novaCategoria.trim();
-      
-      // Atualiza categoria nos produtos
-      produtos = produtos.map(p => {
-        if (p.cat === antigoNome) {
-          return { ...p, cat: novaCategoria.trim() };
-        }
-        return p;
-      });
-      
-      salvar();
-    }
-  }
-  
-  function removerCategoria(index) {
-    if (confirm(`Tem certeza que deseja remover a categoria "${categorias[index]}"?`)) {
-      const catRemovida = categorias[index];
-      categorias.splice(index, 1);
-      
-      // Remove produtos da categoria removida ou move para primeira categoria restante
-      if (categorias.length > 0) {
-        produtos = produtos.map(p => {
-          if (p.cat === catRemovida) {
-            return { ...p, cat: categorias[0] };
-          }
-          return p;
-        });
-      } else {
-        // Se não houver mais categorias, remove todos os produtos
-        produtos = [];
-      }
-      
-      carrinho = {}; // limpa carrinho
-      salvar();
-    }
-  }
-
-  function addProduto() {
-    const nome = document.getElementById('pNome').value;
-    const preco = parseFloat(document.getElementById('pPreco').value);
-    const cat = document.getElementById('pCategoria').value;
-    const desc = document.getElementById('pDesc').value;
-    if (!nome || isNaN(preco) || !cat) return alert('Preencha nome, preço e categoria');
-    produtos.push({ nome, preco, cat, desc });
-    document.getElementById('pNome').value = '';
-    document.getElementById('pPreco').value = '';
-    document.getElementById('pDesc').value = '';
-    salvar();
-  }
-
-  function removerProduto(i) {
-    if (confirm('Remover produto?')) {
-      produtos.splice(i, 1);
-      carrinho = {};
-      salvar();
-    }
-  }
-
-  function salvar() {
-    localStorage.setItem('categorias', JSON.stringify(categorias));
-    localStorage.setItem('produtos', JSON.stringify(produtos));
-    render();
-  }
-
-  function finalizar() {
-    const itens = [];
-    let total = 0;
-    produtos.forEach((p, i) => {
-      if (carrinho[i]) {
-        const sub = carrinho[i] * p.preco;
-        total += sub;
-        itens.push(`🍽️ ${p.nome}  x${carrinho[i]}  = R$ ${sub.toFixed(2)}`);
-      }
-    });
-
-    if (itens.length === 0) {
-      alert('Adicione itens ao carrinho primeiro!');
-      return;
-    }
-
-    const obs = document.getElementById('obs').value || 'Sem observações';
-    const numero = numeroLoja.replace(/\D/g, '');
-    if (!numero || numero.length < 10) {
-      alert('Número da loja não configurado! Acesse o painel do dono e configure o WhatsApp.');
-      return;
-    }
-
-    const dataHora = new Date().toLocaleString('pt-BR');
-    const mensagem = `🆕 *NOVO PEDIDO* 🆕
-━━━━━━━━━━━━━━━━━━━
-*Data:* ${dataHora}
-*Pedido Nº:* ${pedido}
-━━━━━━━━━━━━━━━━━━━
-${itens.join('\n')}
-━━━━━━━━━━━━━━━━━━━
-*Total:* R$ ${total.toFixed(2)}
-━━━━━━━━━━━━━━━━━━━
-📝 *Observações:* ${obs}
-━━━━━━━━━━━━━━━━━━━`;
-
-    localStorage.setItem('pedido', ++pedido);
-    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`, '_blank');
-    carrinho = {};
-    render();
-  }
-
-  function switchTab(tabId, btn) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    ['geral','categorias','produtos','qrcode'].forEach(t => {
-      document.getElementById(t).style.display = t === tabId ? 'block' : 'none';
-    });
-  }
-
-  // Inicialização
-  window.onload = function() {
-    render();
-    if (sessionStorage.getItem('adminAuth') === 'true') {
-      adminLogado = true;
+function editarItem(i){
+  const it = itens[i];
+  if (!it) return;
+  document.getElementById("item").value = it.nome;
+  document.getElementById("quantidade").value = it.qtd;
+  document.getElementById("preco").value = String(it.preco).replace(".", ",");
+  editandoIdx = i;
+  document.getElementById("item").focus();
+  aviso("Editando item. Pressione Enter para salvar ou clique em ✕ para cancelar edição.","ok");
+  // Permite cancelar edição com Esc
+  const cancelar = e => {
+    if (e.key === "Escape"){
+      editandoIdx = -1;
+      document.getElementById("item").value = "";
+      document.getElementById("quantidade").value = 1;
+      document.getElementById("preco").value = "";
+      document.removeEventListener("keydown", cancelar);
+      aviso("Edição cancelada.","ok");
     }
   };
+  document.addEventListener("keydown", cancelar);
+}
 
-  // Expõe funções
-  window.mudarQty = mudarQty;
-  window.addCategoria = addCategoria;
-  window.editarCategoria = editarCategoria;
-  window.removerCategoria = removerCategoria;
-  window.addProduto = addProduto;
-  window.removerProduto = removerProduto;
-  window.abrirModalEditar = abrirModalEditar;
-  window.fecharModalEditar = fecharModalEditar;
-  window.salvarEdicaoProduto = salvarEdicaoProduto;
-  window.finalizar = finalizar;
-  window.switchTab = switchTab;
-  window.abrirModalAdmin = abrirModalAdmin;
-  window.fecharModal = fecharModal;
-  window.verificarSenha = verificarSenha;
-  window.sairAdmin = sairAdmin;
+/* ========== Pedido ========== */
+function criarPedido(){
+  return {
+    id: Date.now(),
+    mesa: document.getElementById("mesa").value.trim(),
+    cliente: document.getElementById("cliente").value.trim(),
+    observacao: document.getElementById("observacao").value.trim(),
+    itens: itens.map(x => ({...x})),
+    data: new Date().toLocaleString("pt-BR"),
+    total: itens.reduce((s,x)=>s + x.qtd*x.preco, 0)
+  };
+}
+
+function validarPedido(){
+  if (!document.getElementById("mesa").value.trim()){
+    aviso("Informe a mesa ou número da comanda.","error");
+    document.getElementById("mesa").focus();
+    return false;
+  }
+  if (!itens.length){
+    aviso("Adicione pelo menos um item ao pedido.","error");
+    return false;
+  }
+  return true;
+}
+
+function concluirPedido(){
+  if (!validarPedido()) return;
+
+  const pedido = criarPedido();
+  pedidos.unshift(pedido);
+  pedidos = pedidos.slice(0, 30);
+  salvarJSON(STORAGE_PEDIDOS, pedidos);
+
+  const okPDF = gerarPDF(pedido);
+  limparPedidoAtual();
+  atualizar();
+
+  aviso(okPDF
+    ? "Pedido concluído. O PDF foi baixado."
+    : "Pedido salvo no histórico, mas o PDF não pôde ser gerado (biblioteca não carregada).",
+    okPDF ? "ok" : "error");
+}
+
+function novoPedido(){
+  if ((itens.length || document.getElementById("mesa").value || document.getElementById("cliente").value)
+      && !confirm("Limpar o pedido atual? Os itens não salvos serão perdidos.")) return;
+  limparPedidoAtual();
+  atualizar();
+  aviso("Novo pedido iniciado.","ok");
+}
+
+function limparPedidoAtual(){
+  itens = [];
+  editandoIdx = -1;
+  ["mesa","cliente","observacao","item","preco"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("quantidade").value = 1;
+  limparRascunho();
+}
+
+/* ========== PDF ========== */
+function gerarPDF(pedido){
+  if (!window.jspdf || !window.jspdf.jsPDF){
+    console.error("jsPDF não disponível.");
+    return false;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const ML = 15, MR = 195, LARG = MR - ML;
+  let y = 18;
+  let pagina = 1;
+
+  const cabecalho = () => {
+    doc.setFontSize(18).setFont(undefined, "bold");
+    doc.text("COMANDA / PEDIDO", 105, y, { align: "center" });
+    y += 10;
+    doc.setFontSize(10).setFont(undefined, "normal");
+    doc.text("Data: " + pedido.data, ML, y);
+    doc.text("Mesa/Comanda: " + pedido.mesa, MR, y, { align: "right" });
+    y += 6;
+    if (pedido.cliente){
+      doc.text("Cliente: " + pedido.cliente, ML, y);
+      y += 6;
+    }
+    doc.setDrawColor(180);
+    doc.line(ML, y, MR, y);
+    y += 7;
+    doc.setFont(undefined, "bold");
+    doc.text("Item", ML, y);
+    doc.text("Qtd.", 130, y, { align: "right" });
+    doc.text("Unit.", 160, y, { align: "right" });
+    doc.text("Total", MR, y, { align: "right" });
+    y += 6;
+    doc.setFont(undefined, "normal");
+    doc.line(ML, y, MR, y);
+    y += 5;
+  };
+
+  const rodape = () => {
+    doc.setFontSize(8).setFont(undefined, "normal");
+    doc.text(`Página ${pagina}`, MR, 290, { align: "right" });
+  };
+
+  const novaPagina = () => {
+    rodape();
+    doc.addPage();
+    pagina++;
+    y = 18;
+    cabecalho();
+  };
+
+  cabecalho();
+
+  pedido.itens.forEach(item => {
+    const linhas = doc.splitTextToSize(item.nome, 100);
+    const alturaLinha = Math.max(7, linhas.length * 5);
+    if (y + alturaLinha > 275) novaPagina();
+
+    doc.text(linhas, ML, y);
+    doc.text(String(item.qtd), 130, y, { align: "right" });
+    doc.text(moneyPDF(item.preco), 160, y, { align: "right" });
+    doc.text(moneyPDF(item.qtd * item.preco), MR, y, { align: "right" });
+    y += alturaLinha;
+  });
+
+  if (y + 20 > 275) novaPagina();
+
+  doc.line(ML, y, MR, y);
+  y += 8;
+  doc.setFontSize(14).setFont(undefined, "bold");
+  doc.text("TOTAL: " + moneyPDF(pedido.total), MR, y, { align: "right" });
+  y += 12;
+
+  if (pedido.observacao){
+    doc.setFontSize(10).setFont(undefined, "normal");
+    doc.text("Observação:", ML, y);
+    y += 5;
+    const obs = doc.splitTextToSize(pedido.observacao, LARG);
+    if (y + obs.length * 5 > 285) novaPagina();
+    doc.text(obs, ML, y);
+  }
+
+  rodape();
+
+  const nomeArquivo = "pedido_mesa_" +
+    pedido.mesa.replace(/[^a-z0-9]/gi, "_") + "_" + pedido.id + ".pdf";
+  doc.save(nomeArquivo);
+  return true;
+}
+
+/* ========== Impressão ========== */
+function imprimirPedido(){
+  if (!validarPedido()) return;
+  const p = criarPedido();
+  montarComprovante(p);
+  const area = document.querySelector(".print-area");
+  area.style.display = "block";
+  window.print();
+  setTimeout(() => { area.style.display = "none"; }, 600);
+}
+
+function montarComprovante(p){
+  document.getElementById("comprovante").innerHTML = `
+    <h1>COMANDA / PEDIDO</h1>
+    <p><b>Data:</b> ${esc(p.data)} &nbsp;&nbsp; <b>Mesa:</b> ${esc(p.mesa)}</p>
+    ${p.cliente ? `<p><b>Cliente:</b> ${esc(p.cliente)}</p>` : ""}
+    <hr>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr>
+          <th style="text-align:left">Item</th>
+          <th style="text-align:right">Qtd.</th>
+          <th style="text-align:right">Unit.</th>
+          <th style="text-align:right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${p.itens.map(x => `
+          <tr>
+            <td>${esc(x.nome)}</td>
+            <td style="text-align:right">${x.qtd}</td>
+            <td style="text-align:right">${fmtBRL(x.preco)}</td>
+            <td style="text-align:right">${fmtBRL(x.qtd*x.preco)}</td>
+          </tr>`).join("")}
+      </tbody>
+    </table>
+    <hr>
+    <h2 style="text-align:right">TOTAL: ${fmtBRL(p.total)}</h2>
+    ${p.observacao ? `<p><b>Observação:</b> ${esc(p.observacao)}</p>` : ""}
+  `;
+}
+
+/* ========== WhatsApp ========== */
+function enviarWhatsApp(){
+  if (!validarPedido()) return;
+  const p = criarPedido();
+  const linhas = [
+    `*Comanda - ${p.mesa}*`,
+    p.cliente ? `Cliente: ${p.cliente}` : "",
+    "",
+    ...p.itens.map(x => `• ${x.qtd}x ${x.nome} — ${fmtBRL(x.qtd*x.preco)}`),
+    "",
+    `*Total: ${fmtBRL(p.total)}*`,
+    p.observacao ? `\nObs.: ${p.observacao}` : ""
+  ].filter(Boolean).join("\n");
+
+  const url = "https://wa.me/?text=" + encodeURIComponent(linhas);
+  window.open(url, "_blank");
+}
+
+/* ========== Histórico ========== */
+function renderHistorico(){
+  const el = document.getElementById("historico");
+  if (!pedidos.length){
+    el.innerHTML = '<div class="empty">Nenhum pedido concluído.</div>';
+    return;
+  }
+  el.innerHTML = pedidos.slice(0, 8).map(p => `
+    <div class="history-item">
+      <div>
+        <span class="badge">${esc(p.mesa)}</span><br>
+        <small>${esc(p.data)} · ${p.itens.length} item(ns)</small>
+      </div>
+      <div style="text-align:right">
+        <b>${fmtBRL(p.total)}</b><br>
+        <button class="btn-secondary" onclick="baixarHistorico(${p.id})">PDF</button>
+      </div>
+    </div>`).join("");
+}
+
+function baixarHistorico(id){
+  const p = pedidos.find(x => x.id === id);
+  if (p) gerarPDF(p);
+}
+
+/* ========== Relógio ========== */
+function atualizarRelogio(){
+  const agora = new Date();
+  const data = agora.toLocaleDateString("pt-BR", { weekday:"short", day:"2-digit", month:"2-digit" });
+  const hora = agora.toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+  document.getElementById("clock").innerHTML = `${data}<br>${hora}`;
+}
+
+/* ========== Eventos ========== */
+["mesa","cliente","observacao"].forEach(id => {
+  document.getElementById(id).addEventListener("input", atualizar);
+});
+
+["item","quantidade","preco"].forEach(id => {
+  document.getElementById(id).addEventListener("keydown", e => {
+    if (e.key === "Enter"){ e.preventDefault(); adicionarItem(); }
+  });
+});
+
+/* ========== Inicialização ========== */
+restaurarRascunho();
+atualizar();
+atualizarRelogio();
+setInterval(atualizarRelogio, 30000);
 </script>
-
 </body>
 </html>
